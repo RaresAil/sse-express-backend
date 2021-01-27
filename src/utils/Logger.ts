@@ -1,6 +1,6 @@
 import createDebuger from 'debug';
 
-const TEST_MODE = process.env.TEST_MODE === 'true';
+const TEST_MODE = process.env.NODE_ENV === 'test';
 
 if (!TEST_MODE) {
   createDebuger.enable('server:*');

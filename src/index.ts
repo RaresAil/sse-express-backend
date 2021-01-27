@@ -4,7 +4,6 @@ import bodyParser from 'body-parser';
 import Express from 'express';
 
 import morgan from 'morgan';
-// import mongoose from 'mongoose';
 
 import SSEEventsHandler from './middlewares/SSEEventsHandlerMiddleware';
 import Server from './app/Server';
@@ -23,15 +22,24 @@ Injector.setup({
   notFoundHandler: undefined
 });
 
-// Injector.inject('MongooseConfig', { connectionURL: '' }, InjectType.Variable);
-// Injector.inject('Mongoose', mongoose, InjectType.Variable);
-
 Injector.inject('SSEEventsHandler', SSEEventsHandler, InjectType.Middleware);
 
 Injector.inject(
   'Middlewares',
   [
-    morgan('dev'),
+    morgan(function (tokens, req, res) {
+      Logger.routeLog(
+        tokens.method(req, res),
+        tokens.url(req, res),
+        tokens.status(req, res),
+        tokens.res(req, res, 'content-length'),
+        '-',
+        tokens['response-time'](req, res),
+        'ms'
+      );
+
+      return null;
+    }),
     bodyParser.json(),
     bodyParser.urlencoded({ extended: false })
   ],

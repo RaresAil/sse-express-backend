@@ -1,5 +1,5 @@
-import { Action, Request, Get, Post, Retrive, Response } from 'adr-express-ts';
-import { Request as ERequest, Response as EResponse } from 'express';
+import { Action, Get, Retrive, Response } from 'adr-express-ts';
+import { Response as EResponse } from 'express';
 
 import SSEResponder from '../../responders/SSEResponder';
 import SSEDomain from '../../domain/SSEDomain';
@@ -19,15 +19,5 @@ export default class SSEAction {
   public getStatus(@Response res: EResponse) {
     const clients = this.doamin!.ClientsLength;
     this.responder!.sendClients(res, clients);
-  }
-
-  @Post('/nest')
-  public async createNest(
-    @Request req: ERequest,
-    @Response res: EResponse
-  ): Promise<any> {
-    const createdNest = this.doamin!.createNest(req.body);
-    this.responder!.sendNest(res, createdNest);
-    this.doamin!.sendEventsToAll(createdNest);
   }
 }

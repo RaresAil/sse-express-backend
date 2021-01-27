@@ -1,0 +1,14 @@
+{
+  "templates": [
+    "Express"
+  ],
+  "paths": {
+    "Express": {
+      "Action": "src/actions",
+      "Domain": "src/domain",
+      "Middleware": "src/middlewares",
+      "Responder": "src/responders",
+      "Entity": "src/domain/entities"
+    }
+  }
+}

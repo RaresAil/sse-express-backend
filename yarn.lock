@@ -298,10 +298,10 @@ acorn@^7.4.0:
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-7.4.1.tgz#feaed255973d2e77555b83dbc08851a6c63520fa"
   integrity sha512-nQyp0o1/mNdbTO1PO6kHkwSrmgZ0MT/jCCpNiwbUjGoRN4dlBhqJtoQuCnEOKzgTVwg0ZWiCoQy6SxMebQVh8A==
 
-adr-express-ts@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/adr-express-ts/-/adr-express-ts-1.1.1.tgz#13f5a24c42373bb6675f01e12a0d025936ebb44d"
-  integrity sha512-PqPjwBF+H/EWypRVA85l+Fg/3D7Mh5Dm0ciA8qOplQk1RGsw+ITIKSBLm5qtxC4HUgriYlivGO67ews46MLCGg==
+adr-express-ts@^1.1.3:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/adr-express-ts/-/adr-express-ts-1.1.3.tgz#70cdc0da615aa3d115c061e76d59dc9789912547"
+  integrity sha512-9c34gx5Fe07fbG570i6JI5eIs77NBln6v0pVM1VW+MORVq+OfPgJa8lngs+aO7mIYBdvUOziCxz5g5e6qkzIQA==
   dependencies:
     async-lock "^1.2.8"
     express "^4.17.1"

@@ -12,7 +12,7 @@ import { Logger } from './utils';
 const expressApp = Express();
 
 Injector.setup({
-  root: __dirname,
+  rootFile: __filename,
   apiPrefix: '/api',
   debug: {
     log: Logger.log,

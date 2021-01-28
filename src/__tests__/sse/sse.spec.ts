@@ -24,22 +24,28 @@ describe('Check the connection', function () {
     };
   });
 
-  it('Expect to have an empty array by default', async function () {
-    expect(nests).to.be.deep.equal([]);
+  it('Expect to have 3 items by default', async function () {
+    expect(nests).to.have.lengthOf(3);
   });
 
   it('Add a nest and expect to receive it', async function () {
     const nest = {
-      someNestMessage: 'someNestValue'
+      currency: 'string',
+      country: 'string',
+      units: 'string',
+      code: 'string',
+      level: 0
     };
+
+    const currentLength = nests.length;
 
     testApp!.createNest(nest);
 
     do {
       await new Promise((resolve) => setTimeout(resolve));
-    } while (nests.length <= 0);
+    } while (nests.length <= currentLength);
 
-    expect(nests[0]).to.be.deep.equal(nest);
+    expect(nests[parseInt(currentLength.toString())]).to.be.deep.equal(nest);
   });
 
   it('Expect to have 1 clinet connected', async function () {

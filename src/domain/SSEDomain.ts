@@ -38,7 +38,14 @@ export default class SSEDomain {
     return nest;
   }
 
-  public sendEventsToAll(nest: Nest) {
-    return this.clients.map((client) => client.res.write(SSE.nestToData(nest)));
+  public replaceNests(nests: Nest[]) {
+    this.nests = nests.map((nest) => cloneDeep(nest));
+    return nests;
+  }
+
+  public sendEventsToAll(nests: Nest | Nest[]) {
+    return this.clients.map((client) =>
+      client.res.write(SSE.nestToData(nests))
+    );
   }
 }

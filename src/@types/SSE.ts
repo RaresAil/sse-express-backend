@@ -6,5 +6,9 @@ export interface Client {
 }
 
 export interface Nest {
-  [key: string]: any;
+  country: string;
+  code: string;
+  currency: string;
+  level: number;
+  units: string;
 }

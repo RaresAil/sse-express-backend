@@ -8,6 +8,7 @@ import morgan from 'morgan';
 import SSEEventsHandler from './middlewares/SSEEventsHandlerMiddleware';
 import Server from './app/Server';
 import { Logger } from './utils';
+import SSE from './app/SSE';
 
 const expressApp = Express();
 
@@ -48,6 +49,7 @@ Injector.inject(
 
 Injector.inject('Express', expressApp, InjectType.Variable);
 
+Injector.inject('SSE', SSE);
 Injector.inject('Server', Server);
 Injector.inject('Router', Router);
 

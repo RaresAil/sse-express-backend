@@ -1,8 +1,6 @@
 import { Inject, Responder } from 'adr-express-ts';
 import { Response } from 'express';
 
-import { Nest } from '../@types/SSE';
-
 @Inject
 @Responder('SSE')
 export default class SSEResponder {
@@ -13,7 +11,21 @@ export default class SSEResponder {
     });
   }
 
-  public sendNest(res: Response, nest: Nest) {
-    return res.status(201).json(nest);
+  public unauthorized(res: Response) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized'
+    });
+  }
+
+  public noContent(res: Response) {
+    return res.status(204).end();
+  }
+
+  public badRequest(res: Response, message: string) {
+    return res.status(400).json({
+      success: false,
+      message
+    });
   }
 }

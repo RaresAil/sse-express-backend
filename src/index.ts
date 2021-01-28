@@ -1,5 +1,6 @@
 import { InjectType } from 'adr-express-ts/lib/@types';
 import { Injector, Router } from 'adr-express-ts';
+import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import Express from 'express';
 import morgan from 'morgan';
@@ -46,6 +47,7 @@ Injector.inject(
 
       return null;
     }),
+    cookieParser(),
     bodyParser.json(),
     bodyParser.urlencoded({ extended: false })
   ],

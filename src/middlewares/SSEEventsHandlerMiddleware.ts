@@ -3,7 +3,7 @@ import { Middleware } from 'adr-express-ts/lib/@types';
 import { Request, Response } from 'express';
 
 import SSEDomain from '../domain/SSEDomain';
-import { SSE } from '../utils';
+import Constants from '../utils/Constants';
 
 @Inject
 export default class SSEEventsHandlerMiddleware implements Middleware {
@@ -14,19 +14,30 @@ export default class SSEEventsHandlerMiddleware implements Middleware {
   private config?: Configuration;
 
   public async middleware(req: Request, res: Response): Promise<any> {
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      Connection: 'keep-alive',
-      'Cache-Control': 'no-cache'
-    });
+    const id = Date.now();
+    res
+      .cookie(
+        Constants.SESSION_NAME,
+        {
+          id
+        },
+        {
+          httpOnly: true
+        }
+      )
+      .writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        Connection: 'keep-alive',
+        'Cache-Control': 'no-cache'
+      });
 
-    res.write(SSE.nestToData(this.doamin!.Nests));
+    const client = this.doamin!.createClient(res, id);
 
-    const clientId = this.doamin!.createClient(res).id;
+    this.doamin!.sendEventsToSingle(this.doamin!.Nests, client);
 
     req.on('close', () => {
-      this.config!.debug.log!(`${clientId} Connection closed`);
-      this.doamin!.deleteClient(clientId);
+      this.config!.debug.log!(`${id} Connection closed`);
+      this.doamin!.deleteClient(id);
     });
   }
 }

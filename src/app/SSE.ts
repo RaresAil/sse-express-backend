@@ -10,14 +10,13 @@ export default class SSE implements InjectedClass {
 
   onReady(): any {
     this.replaceNests(this.generateNests());
-    setInterval(() => this.replaceNests(this.generateNests()), 5000);
   }
 
   private replaceNests(nNests: Nest[]) {
     this.doamin!.sendEventsToAll(this.doamin!.replaceNests(nNests));
   }
 
-  private generateNests() {
+  private generateNests(): Nest[] {
     return [
       {
         id: 1,
@@ -25,7 +24,8 @@ export default class SSE implements InjectedClass {
         country: 'EU',
         units: 'EUR / USD',
         code: 'EUR',
-        level: Math.random()
+        level: Math.random(),
+        total: 0
       },
       {
         id: 2,
@@ -33,7 +33,8 @@ export default class SSE implements InjectedClass {
         country: 'RO',
         units: 'RON / USD',
         code: 'RON',
-        level: Math.random()
+        level: Math.random(),
+        total: 0
       },
       {
         id: 3,
@@ -41,7 +42,8 @@ export default class SSE implements InjectedClass {
         country: 'UK',
         units: 'GBP / USD',
         code: 'GBP',
-        level: Math.random()
+        level: Math.random(),
+        total: 0
       }
     ];
   }

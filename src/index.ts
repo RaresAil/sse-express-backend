@@ -20,7 +20,11 @@ Injector.setup({
     error: Logger.error
   },
   errorHandler: undefined,
-  notFoundHandler: undefined
+  notFoundHandler: undefined,
+  staticFiles: {
+    path: '/',
+    directory: ['public']
+  }
 });
 
 Injector.inject('SSEEventsHandler', SSEEventsHandler, InjectType.Middleware);

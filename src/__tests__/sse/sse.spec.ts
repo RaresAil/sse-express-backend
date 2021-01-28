@@ -5,6 +5,7 @@ import chai, { expect } from 'chai';
 import { events } from '../init';
 import TestApp from '../TestApp';
 import app from '../../index';
+import { Nest } from '../../@types/SSE';
 
 describe('Check the connection', function () {
   let nests: any[];
@@ -29,12 +30,15 @@ describe('Check the connection', function () {
   });
 
   it('Add a nest and expect to receive it', async function () {
-    const nest = {
-      currency: 'string',
+    const nest: Nest = {
+      id: 1,
       country: 'string',
-      units: 'string',
       code: 'string',
-      level: 0
+      currency: 'string',
+      level: 1,
+      units: 'string',
+      total: 1,
+      quantity: 1
     };
 
     const currentLength = nests.length;

@@ -10,9 +10,11 @@ export interface ClientOptions {
 }
 
 export interface Client {
-  id: number;
   res: Response;
-  options: ClientOptions;
+}
+
+export interface Clients {
+  [key: string]: Client;
 }
 
 export interface Nest {

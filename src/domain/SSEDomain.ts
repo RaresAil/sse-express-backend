@@ -1,11 +1,12 @@
 import { Inject, Domain } from 'adr-express-ts';
 import { Response } from 'express';
 import { cloneDeep } from 'lodash';
+import mongoose from 'mongoose';
 
 import {
-  Client,
   ClientOptions,
   ClientOptionsQuantity,
+  Clients,
   Nest
 } from '../@types/SSE';
 import { SSE } from '../utils';
@@ -13,10 +14,10 @@ import { SSE } from '../utils';
 @Inject
 @Domain('SSE')
 export default class SSEDomain {
-  private clients: Client[] = [];
   private nests: Nest[] = [];
+  private clients: Clients = {};
 
-  public get Clients() {
+  public get Clients(): Clients {
     return this.clients;
   }
 
@@ -24,31 +25,65 @@ export default class SSEDomain {
     return cloneDeep(this.nests);
   }
 
-  public createClient(res: Response, id = Date.now()) {
-    const client: Client = {
-      id,
-      res,
-      options: {
-        quantity: []
-      }
+  public async createClient(res: Response, id = mongoose.Types.ObjectId()) {
+    const Client = mongoose.models.Client;
+
+    let findClient: mongoose.Document = await Client.findOne({
+      _id: id
+    });
+
+    if (!findClient) {
+      findClient = new Client({
+        _id: id,
+        options: {
+          quantity: []
+        }
+      });
+      await findClient.save();
+    }
+
+    const client = {
+      id: id.toHexString(),
+      res
     };
 
-    this.clients = [...this.clients, client];
+    this.clients = {
+      ...this.clients,
+      [client.id]: client
+    };
     return client;
   }
 
-  public updateClientOptions(clientId: number, options: ClientOptions) {
-    this.clients = this.clients.map((client) => {
-      if (clientId === client.id) {
-        client.options = options;
-      }
-
-      return client;
+  public async getClientOptions(
+    clientId: string
+  ): Promise<ClientOptions | null | undefined> {
+    const Client = mongoose.models.Client;
+    const findClient: mongoose.Document = await Client.findOne({
+      _id: mongoose.Types.ObjectId(clientId)
     });
+
+    return (findClient?.toObject() as any).options;
   }
 
-  public deleteClient(id: number) {
-    this.clients = this.clients.filter(({ id: cid }) => cid !== id);
+  public async updateClientOptions(clientId: string, options: ClientOptions) {
+    const Client = mongoose.models.Client;
+
+    const findClient: any = await Client.findOne({
+      _id: mongoose.Types.ObjectId(clientId)
+    });
+
+    if (!findClient) {
+      return;
+    }
+
+    findClient.options = options;
+    await findClient.save();
+  }
+
+  public deleteClient(id: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { [id]: _, ...clients } = this.clients;
+    this.clients = clients;
   }
 
   public createNest(nest: Nest) {
@@ -68,56 +103,69 @@ export default class SSEDomain {
     return quantity.find(({ item }) => item === nest.id)?.value ?? 1;
   };
 
-  public sendEventsToSingle(nests: Nest | Nest[], clientId: number | Client) {
-    const client =
-      typeof clientId === 'number'
-        ? this.clients.find(({ id }) => id === clientId)
-        : clientId;
+  public async sendEventsToSingle(nests: Nest | Nest[], clientId: string) {
+    const client = this.clients[clientId.toString()];
 
     if (!client) {
       return null;
     }
 
-    const quantity = client.options.quantity;
+    const clientOptions = await this.getClientOptions(clientId);
+    if (!clientOptions) {
+      return null;
+    }
+
     let parsedNests = cloneDeep(nests);
 
     if (Array.isArray(parsedNests)) {
       parsedNests = parsedNests.map((nest) => ({
         ...nest,
-        total: nest.level * this.getQuantity(nest, quantity),
-        quantity: this.getQuantity(nest, quantity)
+        total: nest.level * this.getQuantity(nest, clientOptions.quantity),
+        quantity: this.getQuantity(nest, clientOptions.quantity)
       }));
     } else {
       parsedNests = {
         ...parsedNests,
-        total: parsedNests.level * this.getQuantity(parsedNests, quantity),
-        quantity: this.getQuantity(parsedNests, quantity)
+        total:
+          parsedNests.level *
+          this.getQuantity(parsedNests, clientOptions.quantity),
+        quantity: this.getQuantity(parsedNests, clientOptions.quantity)
       };
     }
 
     return client.res.write(SSE.nestToData(parsedNests));
   }
 
-  public sendEventsToAll(nests: Nest | Nest[]) {
-    return this.clients.map((client) => {
-      const quantity = client.options.quantity;
-      let parsedNests = cloneDeep(nests);
+  public async sendEventsToAll(nests: Nest | Nest[]) {
+    return await Promise.all(
+      Object.keys(this.clients).map(async (clientId) => {
+        const client = this.clients[clientId.toString()];
 
-      if (Array.isArray(parsedNests)) {
-        parsedNests = parsedNests.map((nest) => ({
-          ...nest,
-          total: nest.level * this.getQuantity(nest, quantity),
-          quantity: this.getQuantity(nest, quantity)
-        }));
-      } else {
-        parsedNests = {
-          ...parsedNests,
-          total: parsedNests.level * this.getQuantity(parsedNests, quantity),
-          quantity: this.getQuantity(parsedNests, quantity)
-        };
-      }
+        const clientOptions = await this.getClientOptions(clientId);
+        if (!clientOptions) {
+          return null;
+        }
 
-      return client.res.write(SSE.nestToData(parsedNests));
-    });
+        let parsedNests = cloneDeep(nests);
+
+        if (Array.isArray(parsedNests)) {
+          parsedNests = parsedNests.map((nest) => ({
+            ...nest,
+            total: nest.level * this.getQuantity(nest, clientOptions.quantity),
+            quantity: this.getQuantity(nest, clientOptions.quantity)
+          }));
+        } else {
+          parsedNests = {
+            ...parsedNests,
+            total:
+              parsedNests.level *
+              this.getQuantity(parsedNests, clientOptions.quantity),
+            quantity: this.getQuantity(parsedNests, clientOptions.quantity)
+          };
+        }
+
+        return client.res.write(SSE.nestToData(parsedNests));
+      })
+    );
   }
 }

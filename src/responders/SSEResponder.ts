@@ -1,5 +1,6 @@
 import { Inject, Responder } from 'adr-express-ts';
 import { Response } from 'express';
+import Constants from '../utils/Constants';
 
 @Inject
 @Responder('SSE')
@@ -27,5 +28,23 @@ export default class SSEResponder {
       success: false,
       message
     });
+  }
+
+  public login(res: Response, id: string) {
+    return res
+      .cookie(
+        Constants.SESSION_NAME,
+        {
+          id
+        },
+        {
+          httpOnly: true
+        }
+      )
+      .status(201)
+      .json({
+        success: true,
+        userId: id
+      });
   }
 }

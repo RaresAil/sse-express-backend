@@ -4,6 +4,7 @@ import { Response as EResponse, Request as ERequest } from 'express';
 import SSEResponder from '../../responders/SSEResponder';
 import SSEDomain from '../../domain/SSEDomain';
 import Constants from '../../utils/Constants';
+import mongoose from 'mongoose';
 
 @Action('/sse')
 export default class SSEAction {
@@ -18,16 +19,37 @@ export default class SSEAction {
 
   @Get('/status')
   public getStatus(@Response res: EResponse) {
-    const clients = this.doamin!.Clients.length;
+    const clients = Object.keys(this.doamin!.Clients).length;
     this.responder!.sendClients(res, clients);
   }
 
-  @Put('/quantity/:id')
-  public setTotal(@Request req: ERequest, @Response res: EResponse) {
+  @Get('/me')
+  public myId(@Request req: ERequest, @Response res: EResponse) {
     const clientId = (req.cookies ?? {})[Constants.SESSION_NAME]?.id;
-    const client = this.doamin!.Clients.find(
-      ({ id }) => id === parseInt(clientId?.toString())
-    );
+    return res.json({
+      success: !!clientId,
+      userId: clientId ?? null
+    });
+  }
+
+  @Get('/login')
+  public register(@Response res: EResponse) {
+    return this.responder!.login(res, mongoose.Types.ObjectId().toHexString());
+  }
+
+  @Get('/login/:id')
+  public login(@Request req: ERequest, @Response res: EResponse) {
+    if (!mongoose.isValidObjectId(req?.params?.id)) {
+      return this.responder!.badRequest(res, 'Invalid id.');
+    }
+
+    return this.responder!.login(res, req.params.id);
+  }
+
+  @Put('/quantity/:id')
+  public async setTotal(@Request req: ERequest, @Response res: EResponse) {
+    const clientId = (req.cookies ?? {})[Constants.SESSION_NAME]?.id;
+    const client = this.doamin!.Clients[clientId?.toString()];
 
     const nest = this.doamin!.Nests.find(
       ({ id }) => id === parseInt(req.params?.id?.toString())
@@ -49,7 +71,12 @@ export default class SSEAction {
       );
     }
 
-    let quantityOptions = [...client.options.quantity];
+    const options = await this.doamin!.getClientOptions(clientId);
+    if (!options) {
+      return this.responder!.unauthorized(res);
+    }
+
+    let quantityOptions = [...options.quantity];
     const search = quantityOptions.findIndex(({ item }) => item === nest.id);
 
     if (search >= 0) {
@@ -64,12 +91,12 @@ export default class SSEAction {
       ];
     }
 
-    this.doamin!.updateClientOptions(client.id, {
-      ...client.options,
+    await this.doamin!.updateClientOptions(clientId, {
+      ...options,
       quantity: quantityOptions
     });
 
-    this.doamin!.sendEventsToSingle(nest, client);
+    this.doamin!.sendEventsToSingle(nest, clientId);
     this.responder!.noContent(res);
   }
 }

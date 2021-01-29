@@ -20,8 +20,6 @@ Injector.setup({
     log: Logger.log,
     error: Logger.error
   },
-  errorHandler: undefined,
-  notFoundHandler: undefined,
   staticFiles: {
     path: '/',
     directory: ['public']

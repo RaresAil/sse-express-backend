@@ -22,7 +22,7 @@ export default class Server implements InjectedClass {
       const env = process.env as any;
 
       mongoose.connect(
-        'mongodb+srv://tsaccess:tsaccess@maincluster.nqcin.mongodb.net/sse?retryWrites=true&w=majority',
+        '',
         {
           useNewUrlParser: true,
           useUnifiedTopology: true,

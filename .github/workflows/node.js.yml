@@ -38,5 +38,10 @@ jobs:
         with:
           name: artifact-dist
           path: dist-14.x.zip
-      - run: ${{ secrets.SETUP_TARGET }}
+      - name: Setup Target Env
+        run: ${{ secrets.SETUP_TARGET }}
+        env:
+          SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
       - run: scp dist-14.x.zip deployment:~/dist.zip

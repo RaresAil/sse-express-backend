@@ -23,11 +23,12 @@ jobs:
       - run: yarn
       - run: yarn run lint
       - run: yarn run build
+      - run: cd dist && zip -r ../dist-${{ matrix.node-version }}.zip * && cd ..
       - run: ls -la
       - uses: actions/upload-artifact@master
         with:
           name: artifact-dist
-          path: dist
+          path: dist-${{ matrix.node-version }}.zip
   deploy:
     needs: build
     environment: development
@@ -37,5 +38,5 @@ jobs:
       - uses: actions/download-artifact@master
         with:
           name: artifact-dist
-          path: dist
+          path: dist-14.x.zip
       - run: ls -la

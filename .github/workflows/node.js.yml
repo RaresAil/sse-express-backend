@@ -39,6 +39,7 @@ jobs:
           name: artifact-dist-14.x
           path: dist.zip
       - run: ls -la
+      - run: cd dist.zip && ls -la
       # - name: Setup Target Env
       #   run: ${{ secrets.SETUP_TARGET }}
       #   env:

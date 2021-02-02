@@ -1,0 +1,12 @@
+version: 0.0
+os: linux
+phases:
+  install:
+    commands:
+      - npm i
+  build:
+    commands:
+      - npm run build
+files:
+  - source: ./dist
+    destination: /poc-app

@@ -47,4 +47,6 @@ jobs:
       - name: Send the dist archvie to the server
         run: scp dist.zip deployment:dists/dist-$GITHUB_RUN_ID-$GITHUB_ACTION.zip
       - name: Deploy the dist
-        run: ${{ secrets.DEPLOY_DIST }}
+        run: ssh deployment 'node deploy.js $DIST_NAME'
+        env:
+          DIST_NAME: $GITHUB_RUN_ID-$GITHUB_ACTION

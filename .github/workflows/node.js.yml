@@ -45,4 +45,4 @@ jobs:
           SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
       - name: Send the dist archvie to the server
-        run: ${{ secrets.SEND_DIST }}
+        run: scp dist-14.x.zip deployment:dist.zip

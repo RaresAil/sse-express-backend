@@ -37,7 +37,7 @@ jobs:
       - uses: actions/download-artifact@master
         with:
           name: artifact-dist-14.x
-          path: /
+          path: .
       - run: ls -la
       - run: echo "$GITHUB_RUN_ID-$GITHUB_ACTION"
       - run: echo $GITHUB_RUN_ID

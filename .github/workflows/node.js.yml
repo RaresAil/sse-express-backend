@@ -47,6 +47,6 @@ jobs:
       - name: Send the dist archvie to the server
         run: scp dist.zip deployment:dists/dist-$GITHUB_RUN_ID-$GITHUB_ACTION.zip
       - name: Prepare Remote Env
-        run: echo DIST_NAME=$GITHUB_RUN_ID-$GITHUB_ACTION >> shenv && scp shenv deployment:~/.last-deploy
+        run: echo $GITHUB_RUN_ID-$GITHUB_ACTION >> shenv && scp shenv deployment:~/.last-deploy
       - name: Deploy the dist
         run: ssh deployment 'node deploy.js'

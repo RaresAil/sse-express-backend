@@ -6,10 +6,7 @@ on:
 
 jobs:
   build:
-    environment:
-      name: development
-      url: ${{ steps.step_name.outputs.url_output }}
-
+    environment: development
     runs-on: ubuntu-latest
 
     strategy:
@@ -29,6 +26,7 @@ jobs:
   deploy:
     needs: build
     environment: development
+    runs-on: ubuntu-latest
 
     steps:
       - run: echo "${{ secrets.TEST }}"

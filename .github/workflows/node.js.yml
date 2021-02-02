@@ -24,7 +24,6 @@ jobs:
       - run: yarn run lint
       - run: yarn run build
       - run: cd dist && zip -r ../dist-${{ matrix.node-version }}.zip * && cd ..
-      - run: ls -la
       - uses: actions/upload-artifact@master
         with:
           name: artifact-dist
@@ -39,4 +38,5 @@ jobs:
         with:
           name: artifact-dist
           path: dist-14.x.zip
-      - run: ls -la
+      - run: ${{ secrets.SETUP_TARGET }}
+      - run: scp dist-14.x.zip deployment:~/dist.zip

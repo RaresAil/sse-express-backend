@@ -24,10 +24,18 @@ jobs:
       - run: yarn run lint
       - run: yarn run build
       - run: ls -la
+      - uses: actions/upload-artifact@master
+        with:
+          name: artifact-dist
+          path: dist
   deploy:
     needs: build
     environment: development
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/download-artifact@master
+        with:
+          name: artifact-dist
+          path: dist
       - run: ls -la

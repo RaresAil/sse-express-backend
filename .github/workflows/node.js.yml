@@ -23,11 +23,11 @@ jobs:
       - run: yarn
       - run: yarn run lint
       - run: yarn run build
-      - run: cd dist && zip -r ../dist-${{ matrix.node-version }}.zip * && cd ..
+      - run: cd dist && zip -r ../dist.zip * && cd ..
       - uses: actions/upload-artifact@master
         with:
-          name: artifact-dist
-          path: dist-${{ matrix.node-version }}.zip
+          name: artifact-dist-${{ matrix.node-version }}
+          path: dist.zip
   deploy:
     needs: build
     environment: development
@@ -36,14 +36,14 @@ jobs:
     steps:
       - uses: actions/download-artifact@master
         with:
-          name: artifact-dist
-          path: dist-14.x.zip
-      - name: Setup Target Env
-        run: ${{ secrets.SETUP_TARGET }}
-        env:
-          SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
-          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          name: artifact-dist-14.x
+          path: dist.zip
       - run: ls -la
-      - name: Send the dist archvie to the server
-        run: scp -r dist-14.x.zip deployment:dist.zip
+      # - name: Setup Target Env
+      #   run: ${{ secrets.SETUP_TARGET }}
+      #   env:
+      #     SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+      #     SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      #     SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+      # - name: Send the dist archvie to the server
+      #   run: scp -r dist-14.x.zip deployment:dist.zip

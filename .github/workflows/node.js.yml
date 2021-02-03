@@ -38,15 +38,11 @@ jobs:
         with:
           name: artifact-dist-14.x
           path: .
-      - name: Setup Target Env
+      - name: Setup target env
         run: ${{ secrets.SETUP_TARGET }}
         env:
           SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
           SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
-      - name: Send the dist archvie to the server
-        run: scp dist.zip deployment:dists/dist-$GITHUB_RUN_ID.zip
-      - name: Prepare Remote Env
-        run: echo $GITHUB_RUN_ID >> shenv && scp shenv deployment:~/.last-deploy
       - name: Deploy the dist
-        run: ssh deployment 'node deploy.js && sudo systemctl restart poc'
+        run: ${{ secrets.RUN_DEPLOY }}

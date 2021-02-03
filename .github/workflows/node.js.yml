@@ -49,4 +49,4 @@ jobs:
       - name: Prepare Remote Env
         run: echo $GITHUB_RUN_ID >> shenv && scp shenv deployment:~/.last-deploy
       - name: Deploy the dist
-        run: ssh deployment 'node deploy.js'
+        run: ssh deployment 'node deploy.js && sudo systemctl restart poc'

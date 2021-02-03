@@ -21,18 +21,15 @@ export default class Server implements InjectedClass {
 
       const env = process.env as any;
 
-      mongoose.connect(
-        '',
-        {
-          useNewUrlParser: true,
-          useUnifiedTopology: true,
-          useCreateIndex: true
-        }
-      );
+      mongoose.connect(env.MONGO_CONN, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useCreateIndex: true
+      });
 
-      this.application.listen(4000, env.HOST, async () => {
+      this.application.listen(env.PORT, env.HOST, async () => {
         this.application!.emit('ready', true);
-        log('Server started %o', `${env.HOST}:4000`);
+        log('Server started %o', `${env.HOST}:${env.PORT}`);
       });
     } catch (e) {
       this.config?.debug.error!(e);

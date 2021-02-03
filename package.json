@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "build": "rm -rf dist && tsc -p . && node build.js",
-    "start": "HOST=0.0.0.0 node dist/index.js",
+    "start": "HOST=0.0.0.0 PORT=4000 node dist/index.js",
     "dev": "HOST=localhost nodemon src/index.ts",
     "test": "NODE_ENV=test HOST=localhost mocha",
     "lint": "eslint src/**/*.ts"

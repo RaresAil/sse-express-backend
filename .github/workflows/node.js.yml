@@ -44,5 +44,9 @@ jobs:
           SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
           SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+      - name: Send the dist
+        run: scp dist.zip deployment:dists/dist-$GITHUB_RUN_ID.zip
+      - name: Prepare remote env
+        run: echo $GITHUB_RUN_ID >> shenv && scp shenv deployment:~/.last-deploy
       - name: Deploy the dist
         run: ${{ secrets.RUN_DEPLOY }}

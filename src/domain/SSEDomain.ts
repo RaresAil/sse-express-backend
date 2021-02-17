@@ -42,16 +42,29 @@ export default class SSEDomain {
       await findClient.save();
     }
 
-    const client = {
-      id: id.toHexString(),
-      res
-    };
+    const clientId = id.toHexString();
+    let responseId: number = -1;
 
-    this.clients = {
-      ...this.clients,
-      [client.id]: client
+    if (this.clients[clientId.toString()]) {
+      responseId = this.clients[clientId.toString()].responses.length;
+      this.clients[clientId.toString()].responses = [
+        ...this.clients[clientId.toString()].responses,
+        res
+      ];
+    } else {
+      responseId = 0;
+      this.clients = {
+        ...this.clients,
+        [clientId]: {
+          responses: [res]
+        }
+      };
+    }
+
+    return {
+      clientId: clientId,
+      responseId
     };
-    return client;
   }
 
   public async getClientOptions(
@@ -80,7 +93,7 @@ export default class SSEDomain {
     await findClient.save();
   }
 
-  public deleteClient(id: string) {
+  private deleteClient(id: string) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { [id]: _, ...clients } = this.clients;
     this.clients = clients;
@@ -101,6 +114,18 @@ export default class SSEDomain {
     quantity: ClientOptionsQuantity[]
   ) {
     return quantity.find(({ item }) => item === nest.id)?.value ?? 1;
+  };
+
+  public removeResponse = (clientId: string, responseId: number) => {
+    this.clients[clientId.toString()].responses = this.clients[
+      clientId.toString()
+    ].responses.filter((_, id) => {
+      return id !== responseId;
+    });
+
+    if (this.clients[clientId.toString()].responses.length <= 0) {
+      this.deleteClient(clientId);
+    }
   };
 
   public async sendEventsToSingle(nests: Nest | Nest[], clientId: string) {
@@ -133,7 +158,14 @@ export default class SSEDomain {
       };
     }
 
-    return client.res.write(SSE.nestToData(parsedNests));
+    return client.responses.map((res, responseId) => {
+      try {
+        return res.write(SSE.nestToData(parsedNests));
+      } catch {
+        this.removeResponse(clientId, responseId);
+        return null;
+      }
+    });
   }
 
   public async sendEventsToAll(nests: Nest | Nest[]) {
@@ -164,7 +196,14 @@ export default class SSEDomain {
           };
         }
 
-        return client.res.write(SSE.nestToData(parsedNests));
+        return client.responses.map((res, responseId) => {
+          try {
+            return res.write(SSE.nestToData(parsedNests));
+          } catch {
+            this.removeResponse(clientId, responseId);
+            return null;
+          }
+        });
       })
     );
   }

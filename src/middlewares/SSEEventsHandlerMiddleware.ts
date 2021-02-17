@@ -28,13 +28,13 @@ export default class SSEEventsHandlerMiddleware implements Middleware {
       'Cache-Control': 'no-cache'
     });
 
-    const client = await this.doamin!.createClient(res, id);
+    const { responseId } = await this.doamin!.createClient(res, id);
 
-    this.doamin!.sendEventsToSingle(this.doamin!.Nests, client.id);
+    this.doamin!.sendEventsToSingle(this.doamin!.Nests, id.toHexString());
 
     req.on('close', () => {
       this.config!.debug.log!(`${id} Connection closed`);
-      this.doamin!.deleteClient(id.toHexString());
+      this.doamin!.removeResponse(id.toHexString(), responseId);
     });
   }
 }

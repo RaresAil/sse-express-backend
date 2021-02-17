@@ -10,7 +10,7 @@ export interface ClientOptions {
 }
 
 export interface Client {
-  res: Response;
+  responses: Response[];
 }
 
 export interface Clients {

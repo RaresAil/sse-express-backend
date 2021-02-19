@@ -1,4 +1,4 @@
-import { Inject, Domain } from 'adr-express-ts';
+import { Inject, Domain, Retrive } from 'adr-express-ts';
 import { Response } from 'express';
 import { cloneDeep } from 'lodash';
 import mongoose from 'mongoose';
@@ -10,10 +10,14 @@ import {
   Nest
 } from '../@types/SSE';
 import { SSE } from '../utils';
+import RedisServer from '../utils/RedisServer';
 
 @Inject
 @Domain('SSE')
 export default class SSEDomain {
+  @Retrive('RedisServer')
+  private redisServer?: RedisServer;
+
   private nests: Nest[] = [];
   private clients: Clients = {};
 
@@ -43,6 +47,7 @@ export default class SSEDomain {
     }
 
     const clientId = id.toHexString();
+    await this.redisServer?.connectClient(clientId);
     let responseId: number = -1;
 
     if (this.clients[clientId.toString()]) {
@@ -97,6 +102,7 @@ export default class SSEDomain {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { [id]: _, ...clients } = this.clients;
     this.clients = clients;
+    this.redisServer?.disconnectClient(id);
   }
 
   public createNest(nest: Nest) {
@@ -129,6 +135,18 @@ export default class SSEDomain {
   };
 
   public async sendEventsToSingle(nests: Nest | Nest[], clientId: string) {
+    const data = await this.prepareDataToSend(nests, clientId);
+    if (!data) {
+      return;
+    }
+
+    await this.redisServer!.sendMessageToClient(clientId, data);
+  }
+
+  public async prepareDataToSend(
+    nests: Nest | Nest[],
+    clientId: string
+  ): Promise<string | null> {
     const client = this.clients[clientId.toString()];
 
     if (!client) {
@@ -158,53 +176,18 @@ export default class SSEDomain {
       };
     }
 
+    return SSE.nestToData(parsedNests);
+  }
+
+  public async writeDataToClient(clientId: string, data: string) {
+    const client = this.clients[clientId.toString()];
     return client.responses.map((res, responseId) => {
       try {
-        return res.write(SSE.nestToData(parsedNests));
+        return res.write(data);
       } catch {
         this.removeResponse(clientId, responseId);
         return null;
       }
     });
-  }
-
-  public async sendEventsToAll(nests: Nest | Nest[]) {
-    return await Promise.all(
-      Object.keys(this.clients).map(async (clientId) => {
-        const client = this.clients[clientId.toString()];
-
-        const clientOptions = await this.getClientOptions(clientId);
-        if (!clientOptions) {
-          return null;
-        }
-
-        let parsedNests = cloneDeep(nests);
-
-        if (Array.isArray(parsedNests)) {
-          parsedNests = parsedNests.map((nest) => ({
-            ...nest,
-            total: nest.level * this.getQuantity(nest, clientOptions.quantity),
-            quantity: this.getQuantity(nest, clientOptions.quantity)
-          }));
-        } else {
-          parsedNests = {
-            ...parsedNests,
-            total:
-              parsedNests.level *
-              this.getQuantity(parsedNests, clientOptions.quantity),
-            quantity: this.getQuantity(parsedNests, clientOptions.quantity)
-          };
-        }
-
-        return client.responses.map((res, responseId) => {
-          try {
-            return res.write(SSE.nestToData(parsedNests));
-          } catch {
-            this.removeResponse(clientId, responseId);
-            return null;
-          }
-        });
-      })
-    );
   }
 }

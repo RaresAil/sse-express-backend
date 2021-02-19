@@ -13,7 +13,7 @@ export default class SSE implements InjectedClass {
   }
 
   private replaceNests(nNests: Nest[]) {
-    this.doamin!.sendEventsToAll(this.doamin!.replaceNests(nNests));
+    this.doamin!.replaceNests(nNests);
   }
 
   private generateNests(): Nest[] {

@@ -7,6 +7,7 @@ import morgan from 'morgan';
 import cors from 'cors';
 
 import SSEEventsHandler from './middlewares/SSEEventsHandlerMiddleware';
+import RedisServer from './utils/RedisServer';
 import Server from './app/Server';
 import { Logger } from './utils';
 import SSE from './app/SSE';
@@ -54,6 +55,7 @@ Injector.inject(
 
 Injector.inject('Express', expressApp, InjectType.Variable);
 
+Injector.inject('RedisServer', RedisServer);
 Injector.inject('SSE', SSE);
 Injector.inject('Server', Server);
 Injector.inject('Router', Router);
